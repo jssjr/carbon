@@ -28,7 +28,7 @@ STORAGE_LISTS_DIR = join(settings.CONF_DIR, 'lists')
 
 
 def getFilesystemPath(metric):
-  metric_path = metric.replace('.', sep).lstrip(sep) + '.wsp'
+  metric_path = metric.replace('.',sep).lstrip(sep) + '.wsp'
   return join(settings.LOCAL_DATA_DIR, metric_path)
 
 
