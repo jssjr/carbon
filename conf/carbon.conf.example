@@ -221,9 +221,6 @@ LINE_RECEIVER_PORT = 2013
 PICKLE_RECEIVER_INTERFACE = 0.0.0.0
 PICKLE_RECEIVER_PORT = 2014
 
-# Set to false to disable logging of successful connections
-LOG_LISTENER_CONNECTIONS = True
-
 # Carbon-relay has several options for metric routing controlled by RELAY_METHOD
 #
 # Use relay-rules.conf to route metrics to destinations based on pattern rules
