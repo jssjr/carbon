@@ -53,6 +53,11 @@ defaults = dict(
   MAX_QUEUE_SIZE=1000,
   QUEUE_LOW_WATERMARK_PCT=0.8,
   TIME_TO_DEFER_SENDING=0.0001,
+  AGGREGATION_FREQUENCY_MULTIPLIER=1.0,
+  ENABLE_AGGREGATION_FILTERING=False,
+  FORWARD_ALL=True,
+
+  # amqp.conf
   ENABLE_AMQP=False,
   AMQP_VERBOSE=False,
   BIND_PATTERNS=['#'],
@@ -78,6 +83,17 @@ defaults = dict(
   AGGREGATION_RULES='aggregation-rules.conf',
   REWRITE_RULES='rewrite-rules.conf',
   RELAY_RULES='relay-rules.conf',
+
+  # writer.conf
+  MAX_CACHE_SIZE=2000000,
+  MAX_WRITES_PER_SECOND=600,
+  MAX_WRITES_PER_SECOND_SHUTDOWN=600,
+  MAX_CREATES_PER_MINUTE=50,
+  LOG_WRITES=True,
+  CACHE_QUERY_PORT=7002,
+  CACHE_QUERY_INTERFACE='0.0.0.0',
+  WHITELISTS_DIR='/opt/graphite/storage/lists',
+  CACHE_WRITE_STRATEGY='sorted',
 )
 
 
@@ -576,3 +592,65 @@ def read_config(program, options, **kwargs):
         settings["LOG_DIR"] = (options["logdir"] or settings["LOG_DIR"])
 
     return settings
+
+
+def read_writer_configs():
+  db_settings = settings.read_file('db.conf')
+  writer_settings = settings.read_file('writer.conf')
+
+  db = db_settings['DATABASE']
+
+  settings['STORAGE_RULES'] = load_storage_rules(settings)
+  settings['CACHE_SIZE_LOW_WATERMARK'] = settings.MAX_CACHE_SIZE * 0.95
+
+  # Database-specific settings
+  if db not in TimeSeriesDatabase.plugins:
+    raise ConfigError("No database plugin implemented for '%s'" % db)
+
+  DatabasePlugin = TimeSeriesDatabase.plugins[db]
+  state.database = DatabasePlugin(settings)
+
+
+def load_storage_rules(settings):
+  storage_rules = settings.read_file('storage-rules.conf', ordered_items=True)
+  if [k for (k,v) in storage_rules if not isinstance(v, dict)]:
+    raise ConfigError("Global settings not allowed in storage-rules.conf")
+
+  # There is almost certainly a better way to set this up.
+  default_storage_rule = {
+    'match-all' : 'true',
+    'retentions' : '1m:1w', # minutely data for a week
+    'xfilesfactor' : 0.5,
+    'aggregation-method' : 'average',
+  }
+
+  if 'default' in storage_rules:
+    default_storage_rule.update(storage_rules.pop('default'))
+
+  storage_rules.append(('default', default_storage_rule))
+  return [StorageRule(values) for name, values in storage_rules]
+
+
+def read_relay_configs():
+  relay_settings = settings.read_file('relay.conf')
+
+  method = relay_settings['RELAY_METHOD']
+  if method not in ('consistent-hashing', 'aggregated-consistent-hashing', 'relay-rules'):
+    raise ConfigError("Invalid RELAY_METHOD \"" + method + "\" must be "
+                      "one of: consistent-hashing, aggregated-consistent-hashing, relay-rules")
+
+  if not relay_settings['DESTINATIONS']:
+    raise ConfigError("relay.conf DESTINATIONS cannot be empty")
+
+  settings['DESTINATIONS'] = util.parseDestinations(relay_settings['DESTINATIONS'])
+
+
+def _process_alive(pid):
+    if exists("/proc"):
+        return exists("/proc/%d" % pid)
+    else:
+        try:
+            os.kill(int(pid), 0)
+            return True
+        except OSError, err:
+            return err.errno == errno.EPERM

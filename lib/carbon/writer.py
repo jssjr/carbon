@@ -134,6 +134,85 @@ def writeCachedDataPoints():
           log.err("Error creating %s: %s" % (dbFilePath,e))
           continue
 
+stats = ('total', 'min', 'max', 'avg')
+instrumentation.configure_stats('writer.create_microseconds', stats)
+instrumentation.configure_stats('writer.write_microseconds', stats)
+instrumentation.configure_stats('writer.datapoints_per_write', ('min', 'max', 'avg'))
+instrumentation.configure_counters([
+  'writer.create_ratelimit_exceeded',
+  'writer.metrics_created',
+  'writer.metric_create_errors',
+  'writer.datapoints_written',
+  'writer.write_operations',
+  'writer.write_ratelimit_exceeded',
+  'writer.write_errors',
+  'writer.cache_full_events',
+  'writer.cache_queries',
+])
+
+ONE_MILLION = 1000000 # I hate counting zeroes
+
+
+class RateLimit(object):
+  def __init__(self, limit, seconds):
+    self.limit = limit
+    self.seconds = seconds
+    self.counter = 0
+    self.next_reset = time.time() + seconds
+
+  @property
+  def exceeded(self):
+    return self.counter > self.limit
+
+  def check(self):
+    if time.time() >= self.next_reset:
+      self.reset()
+
+  def reset(self):
+    self.counter = 0
+    now = int(time.time())
+    if now % self.seconds:
+      current_interval = now - (now % self.seconds)
+    else:
+      current_interval = now
+    self.next_reset = current_interval + self.seconds
+
+  def increment(self, value=1):
+    self.check()
+    self.counter += value
+
+  def wait(self):
+    self.check()
+    delay = self.next_reset - time.time()
+    if delay > 0:
+      time.sleep(delay)
+      self.reset()
+
+
+write_ratelimit = RateLimit(settings.MAX_WRITES_PER_SECOND, 1)
+create_ratelimit = RateLimit(settings.MAX_CREATES_PER_MINUTE, 60)
+
+
+def write_cached_datapoints():
+  database = state.database
+
+  while MetricCache:
+    metric, datapoints = MetricCache.drain_metric()
+    if write_ratelimit.exceeded:
+      #log.writes("write ratelimit exceeded")
+      instrumentation.increment('writer.write_ratelimit_exceeded')
+      write_ratelimit.wait()
+
+    if not database.exists(metric):
+      if create_ratelimit.exceeded:
+        instrumentation.increment('writer.create_ratelimit_exceeded')
+        #log.creates("create ratelimit exceeded")
+        # See if it's time to reset the counter in lieu of of a wait()
+        create_ratelimit.check()
+        continue  # we *do* want to drop the datapoint here.
+
+      metadata = determine_metadata(metric)
+      metadata_string = ' '.join(['%s=%s' % item for item in sorted(metadata.items())])
       try:
         t1 = time.time()
         whisper.update_many(dbFilePath, datapoints)
@@ -186,40 +265,23 @@ def reloadStorageSchemas():
     log.err()
 
 
-def reloadAggregationSchemas():
-  global agg_schemas
-  try:
-    agg_schemas = loadAggregationSchemas()
-  except:
-    log.msg("Failed to reload aggregation schemas")
-    log.err()
-
-
-def shutdownModifyUpdateSpeed():
-    try:
-        settings.MAX_UPDATES_PER_SECOND = settings.MAX_UPDATES_PER_SECOND_ON_SHUTDOWN
-        log.msg("Carbon shutting down.  Changed the update rate to: " + str(settings.MAX_UPDATES_PER_SECOND_ON_SHUTDOWN))
-    except KeyError:
-        log.msg("Carbon shutting down.  Update rate not changed")
+def shutdown_modify_update_speed():
+  global write_ratelimit
+  if settings.MAX_WRITES_PER_SECOND_SHUTDOWN != settings.MAX_WRITES_PER_SECOND:
+    write_ratelimit = RateLimit(settings.MAX_WRITES_PER_SECOND_SHUTDOWN, 1)
+    log.msg("Carbon shutting down.  Changed the update rate to: " + str(settings.MAX_UPDATES_PER_SECOND_ON_SHUTDOWN))
 
 
 class WriterService(Service):
+  def __init__(self):
+    self.reload_task = LoopingCall(reload_storage_rules)
 
-    def __init__(self):
-        self.storage_reload_task = LoopingCall(reloadStorageSchemas)
-        self.aggregation_reload_task = LoopingCall(reloadAggregationSchemas)
+  def startService(self):
+    self.reload_task.start(60, False)
+    reactor.addSystemEventTrigger('before', 'shutdown', shutdown_modify_update_speed)
+    reactor.callInThread(write_forever)
+    Service.startService(self)
 
-    def startService(self):
-        if 'signal' in globals().keys():
-          log.debug("Installing SIG_IGN for SIGHUP")
-          signal.signal(signal.SIGHUP, signal.SIG_IGN)
-        self.storage_reload_task.start(60, False)
-        self.aggregation_reload_task.start(60, False)
-        reactor.addSystemEventTrigger('before', 'shutdown', shutdownModifyUpdateSpeed)
-        reactor.callInThread(writeForever)
-        Service.startService(self)
-
-    def stopService(self):
-        self.storage_reload_task.stop()
-        self.aggregation_reload_task.stop()
-        Service.stopService(self)
+  def stopService(self):
+    self.reload_task.stop()
+    Service.stopService(self)
