@@ -122,7 +122,7 @@ def writeCachedDataPoints():
 
         dbDir = dirname(dbFilePath)
         try:
-          os.makedirs(dbDir, 0755)
+          os.makedirs(dbDir)
         except OSError as e:
           if e.errno != errno.EEXIST:
             log.err("%s" % e)
