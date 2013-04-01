@@ -1,5 +1,6 @@
 import time
 
+from twisted.internet import reactor
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet.error import ConnectionDone
 from twisted.protocols.basic import LineOnlyReceiver, Int32StringReceiver
@@ -58,7 +59,7 @@ class MetricReceiver:
       return
     if datapoint[1] != datapoint[1]:  # filter out NaN values
       return
-    if int(datapoint[0]) == -1:  # use current time if none given
+    if int(datapoint[0]) == -1: # use current time if none given: https://github.com/graphite-project/carbon/issues/54
       datapoint = (time.time(), datapoint[1])
 
     events.metricReceived(metric, datapoint)
