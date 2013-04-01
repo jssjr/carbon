@@ -188,8 +188,10 @@ def createRelayService(config):
     client_manager = CarbonClientManager(router)
     client_manager.setServiceParent(root_service)
 
-    events.metricReceived.addHandler(client_manager.sendHighPriorityDatapoint)
-    events.metricGenerated.addHandler(client_manager.sendHighPriorityDatapoint)
+    events.metricReceived.addHandler(client_manager.sendDatapoint)
+    events.metricGenerated.addHandler(client_manager.sendDatapoint)
+    events.specialMetricReceived.addHandler(client_manager.sendHighPriorityDatapoint)
+    events.specialMetricGenerated.addHandler(client_manager.sendHighPriorityDatapoint)
 
     if not settings.DESTINATIONS:
       raise CarbonConfigException("Required setting DESTINATIONS is missing from carbon.conf")
