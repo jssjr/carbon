@@ -152,9 +152,11 @@ class CacheManagementHandler(Int32StringReceiver):
 
       result = dict(datapointsByMetric=datapointsByMetric)
 
-      log.query('[%s] cache query bulk for \"%d\" metrics returned %d values' %
-        (self.peerAddr, len(metrics), sum([len(datapoints) for datapoints in datapointsByMetric.values()])))
-      instrumentation.increment('cacheQueries')
+      if settings.LOG_CACHE_HITS:
+        log.query('[%s] cache query bulk for \"%d\" metrics returned %d values' %
+            (self.peerAddr, len(metrics), sum([len(datapoints) for datapoints in datapointsByMetric.values()])))
+      instrumentation.increment('cacheBulkQueries')
+      instrumentation.append('cacheBulkQuerySize', len(metrics))
 
     elif request['type'] == 'get-metadata':
       result = management.getMetadata(request['metric'], request['key'])
