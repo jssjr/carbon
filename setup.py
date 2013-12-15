@@ -2,6 +2,7 @@
 
 import os
 import platform
+from carbon import __version__
 from glob import glob
 
 if os.environ.get('USE_SETUPTOOLS'):
@@ -38,7 +39,7 @@ if platform.dist()[0] == 'redhat':
 
 setup(
   name='carbon',
-  version='0.10.0-alpha1',
+  version=__version__,
   url='https://launchpad.net/graphite',
   author='Chris Davis',
   author_email='chrismd@gmail.com',
@@ -47,7 +48,7 @@ setup(
   packages=['carbon', 'carbon.aggregator', 'twisted.plugins'],
   package_dir={'' : 'lib'},
   scripts=glob('bin/*'),
-  package_data={ 'carbon' : ['*.xml'] },
+  include_package_data = True,
   data_files=install_files,
   install_requires=['twisted', 'txamqp'],
   **setup_kwargs
