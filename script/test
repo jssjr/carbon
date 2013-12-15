@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+basedir="$(dirname $0)/.."
+cd "$basedir"
+
+if [ ! -f bin/activate ] ; then
+  echo 'Please run script/bootstrap first.' >&2
+  echo 1
+fi
+
+. bin/activate
+
+bin/flake8 carbon
+bin/nosetests
