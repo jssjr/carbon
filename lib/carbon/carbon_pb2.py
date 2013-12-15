@@ -13,7 +13,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='lib/carbon/carbon.proto',
   package='carbon',
-  serialized_pb='\n\x17lib/carbon/carbon.proto\x12\x06\x63\x61rbon\"=\n\tDatapoint\x12\x0e\n\x06metric\x18\x01 \x02(\t\x12\r\n\x05value\x18\x02 \x02(\x02\x12\x11\n\ttimestamp\x18\x03 \x02(\x02')
+  serialized_pb='\n\x17lib/carbon/carbon.proto\x12\x06\x63\x61rbon\"=\n\tDatapoint\x12\x0e\n\x06metric\x18\x01 \x02(\t\x12\r\n\x05value\x18\x02 \x02(\x02\x12\x11\n\ttimestamp\x18\x03 \x02(\x02\"5\n\rDatapointList\x12$\n\tdatapoint\x18\x01 \x03(\x0b\x32\x11.carbon.Datapoint')
 
 
 
@@ -59,13 +59,49 @@ _DATAPOINT = _descriptor.Descriptor(
   serialized_end=96,
 )
 
+
+_DATAPOINTLIST = _descriptor.Descriptor(
+  name='DatapointList',
+  full_name='carbon.DatapointList',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='datapoint', full_name='carbon.DatapointList.datapoint', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=98,
+  serialized_end=151,
+)
+
+_DATAPOINTLIST.fields_by_name['datapoint'].message_type = _DATAPOINT
 DESCRIPTOR.message_types_by_name['Datapoint'] = _DATAPOINT
+DESCRIPTOR.message_types_by_name['DatapointList'] = _DATAPOINTLIST
 
 class Datapoint(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType
   DESCRIPTOR = _DATAPOINT
 
   # @@protoc_insertion_point(class_scope:carbon.Datapoint)
+
+class DatapointList(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _DATAPOINTLIST
+
+  # @@protoc_insertion_point(class_scope:carbon.DatapointList)
 
 
 # @@protoc_insertion_point(module_scope)
