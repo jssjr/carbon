@@ -16,4 +16,5 @@ venv="$basedir"
 pyver=$(python -V 2>&1 | awk '{gsub(/\.[0-9]+$/,"",$0);print $2}')
 
 #[ "$pyver" = "2.6" ] && bin/pip install argparse
+protoc --python_out . lib/carbon/carbon.proto
 bin/python setup.py install --prefix=${venv} --install-lib=${venv}/lib/python${pyver}/site-packages
