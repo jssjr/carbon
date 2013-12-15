@@ -5,7 +5,7 @@ from twisted.internet import reactor
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet.error import ConnectionDone
 from twisted.protocols.basic import LineOnlyReceiver, Int32StringReceiver
-from carbon import log, events, state, datapoint_pb2
+from carbon import log, events, state, carbon_pb2
 from carbon.conf import settings
 from carbon.util import pickle, get_unpickler
 
@@ -116,7 +116,7 @@ class MetricProtobufReceiver(MetricReceiver, Int32StringReceiver):
 
   def stringReceived(self, data):
     try:
-      dp = datapoint_pb2.Datapoint()
+      dp = carbon_pb2.Datapoint()
       err = dp.ParseFromString(data)
       if err:
          raise RuntimeError("Unable to parse protobuf data")
