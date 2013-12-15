@@ -7,7 +7,7 @@ cd "$basedir"
 
 if [ ! -f bin/activate ] ; then
   echo 'Please run script/bootstrap first.' >&2
-  echo 1
+  exit 1
 fi
 
 . bin/activate
