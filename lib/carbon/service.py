@@ -156,11 +156,12 @@ def setupWriterProcessor(root_service, settings):
 
 def setupReceivers(root_service, settings):
   from carbon.protocols import (MetricLineReceiver, MetricPickleReceiver,
-                                MetricDatagramReceiver)
+                                MetricDatagramReceiver, MetricProtobufReceiver)
 
   receiver_protocols = {
     'plaintext-receiver': MetricLineReceiver,
     'pickle-receiver': MetricPickleReceiver,
+    'protobuf-receiver': MetricProtobufReceiver,
   }
 
   if settings.ENABLE_AMQP:
