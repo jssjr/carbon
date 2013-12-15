@@ -46,7 +46,6 @@ setup(
   license='Apache Software License 2.0',
   description='Backend data caching and persistence daemon for Graphite',
   packages=['carbon', 'carbon.aggregator', 'twisted.plugins'],
-  package_dir={'' : 'lib'},
   scripts=glob('bin/*'),
   include_package_data = True,
   data_files=install_files,
