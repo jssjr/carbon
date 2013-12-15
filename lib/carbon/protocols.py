@@ -105,7 +105,7 @@ class MetricPickleReceiver(MetricReceiver, Int32StringReceiver):
       self.metricReceived(metric, datapoint)
 
 
-class MetricProtobufReciever(MetricReceiver, Int32StringReceiver):
+class MetricProtobufReceiver(MetricReceiver, Int32StringReceiver):
   """
   Handles metrics streams as protobufs with size delimiters
   """
@@ -113,18 +113,20 @@ class MetricProtobufReciever(MetricReceiver, Int32StringReceiver):
 
   def connectionMade(self):
     MetricReceiver.connectionMade(self)
-    self.datapoint = datapoint_pb2.Datapoint()
 
   def stringReceived(self, data):
     try:
-      buf = self.datapoint.ParseFromString(data)
-      metric = buf.metric
-      datapoint = ( float(buf.timestamp), float(buf.value) )
+      dp = datapoint_pb2.Datapoint()
+      err = dp.ParseFromString(data)
+      if err:
+         raise RuntimeError("Unable to parse protobuf data")
+      metric = dp.metric
+      datapoint = ( float(dp.timestamp), float(dp.value) )
 
       self.metricReceived(metric, datapoint)
-    except:
-      log.listener('invalid protobuf received from %s, ignoring' % self.peerName)
-      return
+    except Exception as e:
+        log.listener("invalid protobuf received from %s, ignoring" % self.peerName)
+    return
 
 
 class CacheManagementHandler(Int32StringReceiver):

@@ -32,6 +32,7 @@ from twisted.python import usage
 LISTENER_TYPES = (
   'plaintext-receiver',
   'pickle-receiver',
+  'protobuf-receiver',
 )
 
 defaults = dict(
