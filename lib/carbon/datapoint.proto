@@ -1,0 +1,7 @@
+package carbon;
+
+message Datapoint {
+  require string metric = 1;
+  require float value = 2;
+  require timestamp value = 3;
+}
