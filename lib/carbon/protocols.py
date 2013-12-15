@@ -5,7 +5,7 @@ from twisted.internet import reactor
 from twisted.internet.protocol import DatagramProtocol
 from twisted.internet.error import ConnectionDone
 from twisted.protocols.basic import LineOnlyReceiver, Int32StringReceiver
-from carbon import log, events, state
+from carbon import log, events, state, datapoint_pb2
 from carbon.conf import settings
 from carbon.util import pickle, get_unpickler
 
@@ -103,6 +103,28 @@ class MetricPickleReceiver(MetricReceiver, Int32StringReceiver):
     for (metric, datapoint) in datapoints:
       #Expect proper types since it is coming in pickled.
       self.metricReceived(metric, datapoint)
+
+
+class MetricProtobufReciever(MetricReceiver, Int32StringReceiver):
+  """
+  Handles metrics streams as protobufs with size delimiters
+  """
+  MAX_LENGTH = 2 ** 20
+
+  def connectionMade(self):
+    MetricReceiver.connectionMade(self)
+    self.datapoint = datapoint_pb2.Datapoint()
+
+  def stringReceived(self, data):
+    try:
+      buf = self.datapoint.ParseFromString(data)
+      metric = buf.metric
+      datapoint = ( float(buf.timestamp), float(buf.value) )
+
+      self.metricReceived(metric, datapoint)
+    except:
+      log.listener('invalid protobuf received from %s, ignoring' % self.peerName)
+      return
 
 
 class CacheManagementHandler(Int32StringReceiver):
