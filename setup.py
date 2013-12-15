@@ -37,14 +37,20 @@ if platform.dist()[0] == 'redhat':
                                       'distro/redhat/init.d/carbon-aggregator']) ]
     install_files += init_scripts
 
+with open('README.md') as f:
+    readme = f.read()
+with open('LICENSE') as f:
+    license = f.read()
+
 setup(
   name='carbon',
   version=__version__,
   url='https://launchpad.net/graphite',
   author='Chris Davis',
   author_email='chrismd@gmail.com',
-  license='Apache Software License 2.0',
+  license=license,
   description='Backend data caching and persistence daemon for Graphite',
+  long_description=readme,
   packages=['carbon', 'carbon.aggregator', 'twisted.plugins'],
   scripts=glob('carbon/bin/*'),
   include_package_data = True,
