@@ -5,3 +5,7 @@ message Datapoint {
   required float value = 2;
   required float timestamp = 3;
 }
+
+message DatapointList {
+  repeated Datapoint datapoint = 1;
+}
