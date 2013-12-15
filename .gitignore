@@ -16,6 +16,7 @@ build/
 develop-eggs/
 dist/
 eggs/
+include/
 lib/
 lib64/
 parts/
@@ -42,3 +43,6 @@ coverage.xml
 # Django stuff:
 *.log
 *.pot
+
+# Virtualenv
+.Python
