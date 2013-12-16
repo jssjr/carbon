@@ -15,7 +15,7 @@ class ConsistentHashRing:
 
   def compute_ring_position(self, key):
     big_hash = md5( str(key) ).hexdigest()
-    small_hash = int(big_hash[:8], 16)
+    small_hash = int(big_hash[:4], 16)
     return small_hash
 
   def add_node(self, node):
@@ -23,6 +23,8 @@ class ConsistentHashRing:
     for i in range(self.replica_count):
       replica_key = "%s:%d" % (node, i)
       position = self.compute_ring_position(replica_key)
+      while position in [r[0] for r in self.ring]:
+          position = position + 1
       entry = (position, node)
       bisect.insort(self.ring, entry)
 
