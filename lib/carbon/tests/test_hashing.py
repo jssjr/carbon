@@ -83,9 +83,9 @@ class HashIntegrityTest(unittest.TestCase):
                 len([n[0] for n in ring.ring]),
             len(set([n[0] for n in ring.ring])))
 
-    def test_10_to_50_node_positional_itegrity(self):
+    def test_10_to_99_node_positional_itegrity(self):
         """Make a cluster, verify we don't have positional collisions"""
-        for c in range(10,50):
+        for c in range(10,99):
             ring = ConsistentHashRing([])
             for n in range(c):
                 ring.add_node(("192.168.10.%s" % str(10+n),"%s" % str(10+n)))
