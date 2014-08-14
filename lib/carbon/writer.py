@@ -70,17 +70,30 @@ def optimalWriteOrder():
     dbFilePath = getFilesystemPath(metric)
     dbFileExists = exists(dbFilePath)
 
-    if not dbFileExists and CREATE_BUCKET:
-      # If our tokenbucket has enough tokens available to create a new metric
-      # file then yield the metric data to complete that operation. Otherwise
-      # we'll just drop the metric on the ground and move on to the next
-      # metric.
-      # XXX This behavior should probably be configurable to no tdrop metrics
-      # when rate limitng unless our cache is too big or some other legit
-      # reason.
-      if CREATE_BUCKET.drain(1):
-        yield (metric, datapoints, dbFilePath, dbFileExists)
-      continue
+    if not dbFileExists:
+      createCount += 1
+      now = time.time()
+
+      if now - lastCreateInterval >= 60:
+        lastCreateInterval = now
+        createCount = 1
+
+      elif createCount >= settings.MAX_CREATES_PER_MINUTE:
+        # dropping queued up datapoints for new metrics prevents filling up the entire cache
+        # when a bunch of new metrics are received.
+        try:
+          MetricCache.pop(metric)
+        except KeyError:
+          pass
+        instrumentation.increment('droppedCreates')
+        continue
+
+    try:  # metrics can momentarily disappear from the MetricCache due to the implementation of MetricCache.store()
+      datapoints = MetricCache.pop(metric)
+    except KeyError:
+      log.msg("MetricCache contention, skipping %s update for now" % metric)
+      continue  # we simply move on to the next metric when this race condition occurs
+
     yield (metric, datapoints, dbFilePath, dbFileExists)
 
 
