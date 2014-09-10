@@ -158,8 +158,8 @@ WHISPER_FALLOCATE_CREATE = True
 # WHISPER_LOCK_WRITES = False
 
 # Set this to True to enable whitelisting and blacklisting of metrics in
-# CONF_DIR/whitelist and CONF_DIR/blacklist. If the whitelist is missing or
-# empty, all metrics will pass through
+# CONF_DIR/whitelist.conf and CONF_DIR/blacklist.conf. If the whitelist is
+# missing or empty, all metrics will pass through
 # USE_WHITELIST = False
 
 # By default, carbon itself will log statistics (such as a count,
@@ -295,8 +295,8 @@ TIME_TO_DEFER_SENDING = 0.0001
 USE_FLOW_CONTROL = True
 
 # Set this to True to enable whitelisting and blacklisting of metrics in
-# CONF_DIR/whitelist and CONF_DIR/blacklist. If the whitelist is missing or
-# empty, all metrics will pass through
+# CONF_DIR/whitelist.conf and CONF_DIR/blacklist.conf. If the whitelist is
+# missing or empty, all metrics will pass through
 # USE_WHITELIST = False
 
 # By default, carbon itself will log statistics (such as a count,
@@ -348,7 +348,7 @@ PICKLE_RECEIVER_PORT = 2024
 
 # Filenames of the configuration files to use for this instance of aggregator.
 # Filenames are relative to CONF_DIR.
-# 
+#
 # AGGREGATION_RULES = aggregation-rules.conf
 # REWRITE_RULES = rewrite-rules.conf
 
@@ -401,8 +401,8 @@ MAX_AGGREGATION_INTERVALS = 5
 # WRITE_BACK_FREQUENCY = 0
 
 # Set this to True to enable whitelisting and blacklisting of metrics in
-# CONF_DIR/whitelist and CONF_DIR/blacklist. If the whitelist is missing or
-# empty, all metrics will pass through
+# CONF_DIR/whitelist.conf and CONF_DIR/blacklist.conf. If the whitelist is
+# missing or empty, all metrics will pass through
 # USE_WHITELIST = False
 
 # By default, carbon itself will log statistics (such as a count,
