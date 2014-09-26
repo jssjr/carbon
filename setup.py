@@ -12,12 +12,9 @@ else:
   from distutils.core import setup
   setup_kwargs = dict()
 
+conf_files = [ ('share/carbon/conf', glob('conf/*.example')) ]
 
-storage_dirs = [ ('storage/whisper',[]), ('storage/lists',[]),
-                 ('storage/log',[]), ('storage/rrd',[]) ]
-conf_files = [ ('conf', glob('conf/*.example')) ]
-
-install_files = storage_dirs + conf_files
+install_files = conf_files
 
 # If we are building on RedHat, let's use the redhat init scripts.
 if platform.dist()[0] == 'redhat':
