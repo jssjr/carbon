@@ -503,7 +503,7 @@ def read_config(program, options, **kwargs):
     # 'GRAPHITE_CONF_DIR' environment variable.
     settings.setdefault("CONF_DIR",
                         os.environ.get("GRAPHITE_CONF_DIR",
-                                       join(graphite_root, "conf")))
+                                       join("/", "etc", "graphite")))
     if options["config"] is None:
         options["config"] = join(settings["CONF_DIR"], "carbon.conf")
     else:
