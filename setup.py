@@ -4,13 +4,8 @@ import os
 import platform
 from glob import glob
 
-if os.environ.get('USE_SETUPTOOLS'):
-  from setuptools import setup
-  setup_kwargs = dict(zip_safe=0)
-
-else:
-  from distutils.core import setup
-  setup_kwargs = dict()
+from setuptools import setup
+setup_kwargs = dict(zip_safe=0)
 
 conf_files = [ ('share/carbon/conf', glob('conf/*.example')) ]
 
@@ -32,10 +27,18 @@ setup(
   author_email='chrismd@gmail.com',
   license='Apache Software License 2.0',
   description='Backend data caching and persistence daemon for Graphite',
-  packages=['carbon', 'carbon.aggregator', 'twisted.plugins'],
-  scripts=glob('bin/*'),
+  packages=['carbon', 'carbon.app', 'carbon.aggregator', 'twisted.plugins'],
   package_data={ 'carbon' : ['*.xml'] },
   data_files=install_files,
-  install_requires=['twisted', 'txamqp'],
-  **setup_kwargs
+  install_requires=['twisted', 'txamqp', 'whisper'],
+  entry_points={
+      'console_scripts': [
+          "carbon-cache=carbon.app.cache:run",
+          "carbon-aggregator=carbon.app.aggregator:run",
+          "carbon-client=carbon.app.client:run",
+          "carbon-relay=carbon.app.relay:run",
+          "validate-storage-schemas=carbon.app.validate_storage_schemas:run"
+          ]
+      }
+#  **setup_kwargs
 )
