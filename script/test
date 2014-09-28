@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+cd $(dirname $0)/..
+ROOT_DIR=`pwd -P`
+
+if [ -z "$USINGTOX" ]
+then
+  . bin/activate
+fi
+
+bin/trial tests/*.py

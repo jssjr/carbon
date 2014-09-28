@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+
+cd $(dirname $0)/..
+ROOT_DIR=`pwd -P`
+
+
+script/clean
+
+trap "git checkout setup.cfg" TERM EXIT
+rm -f setup.cfg
+
+script/bootstrap
+
+pip install tox
+
+bin/tox

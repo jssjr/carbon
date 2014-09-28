@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+ls bin/* | grep -vf <(cat<<EOF
+carbon-aggregator.py
+carbon-cache.py
+carbon-client.py
+carbon-relay.py
+validate-storage-schemas.py
+EOF
+) | xargs rm -f
+
+rm -rf .Python .tox _trial_temp build include lib/python*
+
+find . -type f -name \*.pyc -exec /bin/rm -f {} \;
