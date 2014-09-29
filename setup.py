@@ -8,6 +8,8 @@ import ConfigParser
 import platform
 from glob import glob
 
+from carbon import __version__
+
 try:
     from io import BytesIO
 except ImportError:
@@ -65,7 +67,7 @@ if platform.dist()[0] == 'redhat':
 try:
     setup(
       name='carbon',
-      version='0.9.10',
+      version=__version__,
       url='https://launchpad.net/graphite',
       author='Chris Davis',
       author_email='chrismd@gmail.com',
