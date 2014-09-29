@@ -10,7 +10,7 @@ from glob import glob
 
 from carbon import __version__
 
-from setuptools import setup
+from setuptools import setup, find_packages
 setup_kwargs = dict(zip_safe=0)
 
 conf_files = [ ('conf', glob('conf/*.example')) ]
@@ -33,10 +33,12 @@ setup(
   license='Apache Software License 2.0',
   description='Backend data caching and persistence daemon for Graphite',
   long_description='Backend data caching and persistence daemon for Graphite',
-  packages=['carbon', 'carbon.app', 'carbon.aggregator', 'twisted.plugins'],
+  #packages=['carbon', 'carbon.app', 'carbon.aggregator', 'twisted.plugins'],
+  packages=find_packages(exclude=['.tox', 'tests']),
   package_data={ 'carbon' : ['*.xml'] },
   data_files=install_files,
   install_requires=['twisted', 'txamqp'],
+  test_suite='tests',
   entry_points={
       'console_scripts': [
           "carbon-cache=carbon.app.cache:run",

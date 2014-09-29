@@ -13,11 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License."""
 
+from os.path import basename
 from carbon.util import run_twistd_plugin
 from carbon.exceptions import CarbonConfigException
 
 def run():
     try:
-        run_twistd_plugin(__file__)
+        run_twistd_plugin("carbon-%s" % basename(__file__))
     except CarbonConfigException, exc:
         raise SystemExit(str(exc))

@@ -19,7 +19,9 @@ from os.path import dirname, join, abspath, exists
 from optparse import OptionParser
 
 # Figure out where we're installed
-CONF_DIR = join('/', 'etc', 'carbon')
+BIN_DIR = dirname(abspath(__file__))
+ROOT_DIR = dirname(BIN_DIR)
+CONF_DIR = join(ROOT_DIR, 'carbon')
 default_relayrules = join(CONF_DIR, 'relay-rules.conf')
 
 try:
