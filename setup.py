@@ -10,25 +10,12 @@ from glob import glob
 
 from carbon import __version__
 
-try:
-    from io import BytesIO
-except ImportError:
-    from StringIO import StringIO as BytesIO
+from setuptools import setup
+setup_kwargs = dict(zip_safe=0)
 
-if os.environ.get('USE_SETUPTOOLS'):
-  from setuptools import setup
-  setup_kwargs = dict(zip_safe=0)
-
-else:
-  from distutils.core import setup
-  setup_kwargs = dict()
-
-
-storage_dirs = [ ('storage/whisper',[]), ('storage/lists',[]),
-                 ('storage/log',[]), ('storage/rrd',[]) ]
 conf_files = [ ('conf', glob('conf/*.example')) ]
 
-install_files = storage_dirs + conf_files
+install_files = conf_files
 
 # If we are building on RedHat, let's use the redhat init scripts.
 if platform.dist()[0] == 'redhat':
