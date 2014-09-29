@@ -33,10 +33,18 @@ setup(
   license='Apache Software License 2.0',
   description='Backend data caching and persistence daemon for Graphite',
   long_description='Backend data caching and persistence daemon for Graphite',
-  packages=['carbon', 'carbon.aggregator', 'twisted.plugins'],
-  scripts=glob('bin/*'),
+  packages=['carbon', 'carbon.app', 'carbon.aggregator', 'twisted.plugins'],
   package_data={ 'carbon' : ['*.xml'] },
   data_files=install_files,
   install_requires=['twisted', 'txamqp'],
+  entry_points={
+      'console_scripts': [
+          "carbon-cache=carbon.app.cache:run",
+          "carbon-aggregator=carbon.app.aggregator:run",
+          "carbon-client=carbon.app.client:run",
+          "carbon-relay=carbon.app.relay:run",
+          "validate-storage-schemas=carbon.app.validate_storage_schemas:run"
+          ]
+      },
   **setup_kwargs
 )
