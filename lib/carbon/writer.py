@@ -53,8 +53,16 @@ if settings.MAX_UPDATES_PER_SECOND != float('inf'):
 def optimalWriteOrder():
   """Generates metrics with the most cached values first and applies a soft
   rate limit on new metrics"""
-  while MetricCache:
-    (metric, datapoints) = MetricCache.pop()
+  global lastCreateInterval
+  global createCount
+  metrics = MetricCache.counts()
+
+  t = time.time()
+  metrics.sort(key=lambda item: item[1], reverse=True)  # by queue size, descending
+  log.debug("Sorted %d cache queues in %.6f seconds" % (len(metrics),
+                                                        time.time() - t))
+
+  for metric, queueSize in metrics:
     if state.cacheTooFull and MetricCache.size < CACHE_SIZE_LOW_WATERMARK:
       events.cacheSpaceAvailable()
 
