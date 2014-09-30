@@ -113,9 +113,9 @@ def writeCachedDataPoints():
 
         dbDir = dirname(dbFilePath)
         try:
-            if not exists(dbDir):
-                os.makedirs(dbDir, 0755)
-        except OSError, e:
+          os.makedirs(dbDir, 0755)
+        except OSError as e:
+          if e.errno != 17:
             log.err("%s" % e)
         log.creates("creating database file %s (archive=%s xff=%s agg=%s)" %
                     (dbFilePath, archiveConfig, xFilesFactor, aggregationMethod))
