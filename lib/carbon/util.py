@@ -1,7 +1,7 @@
 import copy
 import os
 import pwd
-import sys
+import log
 
 from os.path import abspath, basename, dirname
 try:
@@ -15,7 +15,12 @@ except:
   import pickle
   USING_CPICKLE = False
 
-from time import sleep, time
+try:
+  import signal
+except ImportError:
+  log.debug("Couldn't import signal")
+
+
 from twisted.python.util import initgroups
 from twisted.scripts.twistd import runApp
 
@@ -29,6 +34,10 @@ def dropprivs(user):
 
 
 def run_twistd_plugin(filename):
+    if 'signal' in globals().keys():
+      log.debug("Installing SIG_IGN for SIGHUP")
+      signal.signal(signal.SIGHUP, signal.SIG_IGN)
+
     from carbon.conf import get_parser
     from twisted.scripts.twistd import ServerOptions
 
