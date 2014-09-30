@@ -19,6 +19,6 @@ from carbon.exceptions import CarbonConfigException
 
 def run():
     try:
-        run_twistd_plugin("carbon-%s.py" % basename(__file__))
+        run_twistd_plugin("carbon-%s" % basename(__file__))
     except CarbonConfigException, exc:
         raise SystemExit(str(exc))
