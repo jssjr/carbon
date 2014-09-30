@@ -89,13 +89,6 @@ def recordMetrics():
     cacheOverflow = myStats.get('cache.overflow', 0)
     cacheBulkQuerySizes = myStats.get('cacheBulkQuerySize', [])
 
-    # Calculate cache-data-structure-derived metrics prior to storing anything
-    # in the cache itself -- which would otherwise affect said metrics.
-    cache_size = cache.MetricCache.size
-    cache_queues = len(cache.MetricCache)
-    record('cache.size', cache_size)
-    record('cache.queues', cache_queues)
-
     if updateTimes:
       avgUpdateTime = sum(updateTimes) / len(updateTimes)
       record('avgUpdateTime', avgUpdateTime)
@@ -114,6 +107,8 @@ def recordMetrics():
     record('errors', errors)
     record('cache.queries', cacheQueries)
     record('cache.bulk_queries', cacheBulkQueries)
+    record('cache.queues', len(cache.MetricCache))
+    record('cache.size', cache.MetricCache.size)
     record('cache.overflow', cacheOverflow)
 
   # aggregator metrics
