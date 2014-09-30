@@ -1,7 +1,6 @@
 import copy
 import os
 import pwd
-import __builtin__
 
 from os.path import abspath, basename, dirname
 try:
@@ -15,7 +14,6 @@ except:
   import pickle
   USING_CPICKLE = False
 
-from time import sleep, time
 from twisted.python.util import initgroups
 from twisted.scripts.twistd import runApp
 
@@ -153,11 +151,11 @@ else:
       if not name in self.PICKLE_SAFE[module]:
         raise pickle.UnpicklingError('Attempting to unpickle unsafe class %s' % name)
       return getattr(mod, name)
-
+ 
     @classmethod
     def loads(cls, pickle_string):
       return cls(StringIO(pickle_string)).load()
-
+ 
 
 def get_unpickler(insecure=False):
   if insecure:
