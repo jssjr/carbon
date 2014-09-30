@@ -72,7 +72,6 @@ def optimalWriteOrder():
       if CREATE_BUCKET.drain(1):
         yield (metric, datapoints, dbFilePath, dbFileExists)
       continue
-
     yield (metric, datapoints, dbFilePath, dbFileExists)
 
 
@@ -138,6 +137,17 @@ def writeCachedDataPoints():
         if settings.LOG_UPDATES:
           log.updates("wrote %d datapoints for %s in %.5f seconds" % (pointCount, metric, updateTime))
 
+        # Rate limit update operations
+        thisSecond = int(t2)
+
+        if thisSecond != lastSecond:
+          lastSecond = thisSecond
+          updates = 0
+        else:
+          updates += 1
+          if updates >= settings.MAX_UPDATES_PER_SECOND:
+            time.sleep(int(t2 + 1) - t2)
+
     # Avoid churning CPU when only new metrics are in the cache
     if not dataWritten:
       time.sleep(0.1)
@@ -149,6 +159,7 @@ def writeForever():
       writeCachedDataPoints()
     except:
       log.err()
+
     time.sleep(1)  # The writer thread only sleeps when the cache is empty or an error occurs
 
 
@@ -164,7 +175,7 @@ def reloadStorageSchemas():
 def reloadAggregationSchemas():
   global AGGREGATION_SCHEMAS
   try:
-    AGGREGATION_SCHEMAS = loadAggregationSchemas()
+    agg_schemas = loadAggregationSchemas()
   except:
     log.msg("Failed to reload aggregation SCHEMAS")
     log.err()
