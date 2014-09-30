@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/Users/jssjr/jssjr/carbon/bin/python
 """Copyright 2009 Chris Davis
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,13 +21,8 @@ from optparse import OptionParser
 # Figure out where we're installed
 BIN_DIR = dirname(abspath(__file__))
 ROOT_DIR = dirname(BIN_DIR)
-CONF_DIR = join(ROOT_DIR, 'conf')
+CONF_DIR = join(ROOT_DIR, 'carbon')
 default_relayrules = join(CONF_DIR, 'relay-rules.conf')
-
-# Make sure that carbon's 'lib' dir is in the $PYTHONPATH if we're running from
-# source.
-LIB_DIR = join(ROOT_DIR, 'lib')
-sys.path.insert(0, LIB_DIR)
 
 try:
   from twisted.internet import epollreactor
@@ -132,5 +127,6 @@ def shutdown(results):
   if reactor.running:
     reactor.stop()
 
-reactor.run()
-raise SystemExit(exitCode)
+def run():
+    reactor.run()
+    raise SystemExit(exitCode)

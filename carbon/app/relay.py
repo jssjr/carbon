@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/Users/jssjr/jssjr/carbon/bin/python
 """Copyright 2009 Chris Davis
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,22 +13,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License."""
 
-import sys
-import os.path
-
-# Figure out where we're installed
-BIN_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.dirname(BIN_DIR)
-
-# Make sure that carbon's 'lib' dir is in the $PYTHONPATH if we're running from
-# source.
-LIB_DIR = os.path.join(ROOT_DIR, "lib")
-sys.path.insert(0, LIB_DIR)
-
+from os.path import basename
 from carbon.util import run_twistd_plugin
 from carbon.exceptions import CarbonConfigException
 
-try:
-    run_twistd_plugin(__file__)
-except CarbonConfigException, exc:
-    raise SystemExit(str(exc))
+def run():
+    try:
+        run_twistd_plugin("carbon-%s" % basename(__file__))
+    except CarbonConfigException, exc:
+        raise SystemExit(str(exc))
