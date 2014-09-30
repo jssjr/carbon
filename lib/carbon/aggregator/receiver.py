@@ -1,6 +1,7 @@
 from carbon.instrumentation import increment
 from carbon.aggregator.rules import RuleManager
 from carbon.aggregator.buffers import BufferManager
+from carbon.conf import settings
 from carbon.rewrite import RewriteRuleManager
 from carbon import events, log
 
