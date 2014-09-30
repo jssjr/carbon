@@ -73,11 +73,11 @@ defaults = dict(
   CARBON_METRIC_INTERVAL=60,
   CACHE_WRITE_STRATEGY='sorted',
   WRITE_BACK_FREQUENCY=None,
-  MIN_RESET_STAT_FLOW=1000,
-  MIN_RESET_RATIO=0.9,
-  MIN_RESET_INTERVAL=121,
-  USE_RATIO_RESET=False,
-  LOG_LISTENER_CONN_SUCCESS=True,
+  ENABLE_LOGROTATION=True,
+  LOG_LISTENER_CONNECTIONS=True,
+  AGGREGATION_RULES='aggregation-rules.conf',
+  REWRITE_RULES='rewrite-rules.conf',
+  RELAY_RULES='relay-rules.conf',
 )
 
 
@@ -392,7 +392,7 @@ class CarbonRelayOptions(CarbonCacheOptions):
         settings["relay-rules"] = self["rules"]
 
         if self["aggregation-rules"] is None:
-            self["aggregation-rules"] = join(settings["CONF_DIR"], settings['AGGREGATION_RULES'])
+            self["rules"] = join(settings["CONF_DIR"], settings['AGGREGATION-RULES'])
         settings["aggregation-rules"] = self["aggregation-rules"]
 
         if settings["RELAY_METHOD"] not in ("rules", "consistent-hashing", "aggregated-consistent-hashing"):
