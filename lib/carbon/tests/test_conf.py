@@ -1,8 +1,9 @@
 import os
-from os import makedirs
+import unittest
+import errno
+from ConfigParser import RawConfigParser
+from os import makedirs, getcwd
 from os.path import dirname, join
-from unittest import TestCase
-from mocker import MockerTestCase
 from carbon.conf import get_default_parser, parse_options, read_config
 from carbon.exceptions import CarbonConfigException
 
@@ -31,7 +32,7 @@ class FakeOptions(object):
         self.__dict__[name] = value
 
 
-class DefaultParserTest(TestCase):
+class DefaultParserTest(unittest.TestCase):
 
     def test_default_parser(self):
         """Check default parser settings."""
@@ -50,7 +51,7 @@ class DefaultParserTest(TestCase):
         self.assertEqual("a", parser.defaults["instance"])
 
 
-class ParseOptionsTest(TestCase):
+class ParseOptionsTest(unittest.TestCase):
 
     def test_no_args_prints_usage_and_exit(self):
         """
@@ -80,7 +81,24 @@ class ParseOptionsTest(TestCase):
         self.assertEqual(("start",), args)
 
 
-class ReadConfigTest(MockerTestCase):
+class ReadConfigTest(unittest.TestCase):
+
+    def setUp(self):
+        self.conf_dir = join("conf")
+        try:
+            makedirs(self.conf_dir)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                self.fail("OMG %s" % (e))
+        self.raw_config = RawConfigParser()
+
+    def tearDown(self):
+        self.raw_config = None
+
+    def write_config(self, name="carbon.conf"):
+        with open(name, 'wb') as cfgfile:
+            self.raw_config.write(cfgfile)
+        return name
 
     def test_root_dir_is_required(self):
         """
@@ -99,12 +117,9 @@ class ReadConfigTest(MockerTestCase):
         If the '--config' option is not provided, it defaults to
         ROOT_DIR/conf/carbon.conf.
         """
-        root_dir = self.makeDir()
-        conf_dir = join(root_dir, "conf")
-        makedirs(conf_dir)
-        self.makeFile(content="[foo]",
-                      basename="carbon.conf",
-                      dirname=conf_dir)
+        root_dir = getcwd()
+        self.raw_config.add_section("foo")
+        self.write_config(join(self.conf_dir, "carbon.conf"))
         options = FakeOptions(config=None, instance=None,
                               pidfile=None, logdir=None)
         read_config("carbon-foo", options, ROOT_DIR=root_dir)
@@ -116,12 +131,11 @@ class ReadConfigTest(MockerTestCase):
         If the 'GRAPHITE_CONFIG_DIR' variable is set in the environment, then
         'CONFIG_DIR' will be set to that directory.
         """
-        root_dir = self.makeDir()
+        root_dir = getcwd()
         conf_dir = join(root_dir, "configs", "production")
         makedirs(conf_dir)
-        self.makeFile(content="[foo]",
-                      basename="carbon.conf",
-                      dirname=conf_dir)
+        self.raw_config.add_section("foo")
+        self.write_config(join(conf_dir, "carbon.conf"))
         orig_value = os.environ.get("GRAPHITE_CONF_DIR", None)
         if orig_value is not None:
             self.addCleanup(os.environ.__setitem__,
@@ -141,12 +155,12 @@ class ReadConfigTest(MockerTestCase):
         The 'CONF_DIR' setting defaults to the parent directory of the
         provided configuration file.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance=None,
-                        pidfile=None, logdir=None),
-            ROOT_DIR="foo")
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance=None,
+                                           pidfile=None, logdir=None),
+                               ROOT_DIR="foo")
         self.assertEqual(dirname(config), settings.CONF_DIR)
 
     def test_storage_dir_relative_to_root_dir(self):
@@ -154,12 +168,12 @@ class ReadConfigTest(MockerTestCase):
         The 'STORAGE_DIR' setting defaults to the 'storage' directory relative
         to the 'ROOT_DIR' setting.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance=None,
-                        pidfile=None, logdir=None),
-            ROOT_DIR="foo")
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance=None,
+                                           pidfile=None, logdir=None),
+                               ROOT_DIR="foo")
         self.assertEqual(join("foo", "storage"), settings.STORAGE_DIR)
 
     def test_log_dir_relative_to_storage_dir(self):
@@ -167,12 +181,12 @@ class ReadConfigTest(MockerTestCase):
         The 'LOG_DIR' setting defaults to a program-specific directory relative
         to the 'STORAGE_DIR' setting.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance=None,
-                        pidfile=None, logdir=None),
-            ROOT_DIR="foo")
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance=None,
+                                           pidfile=None, logdir=None),
+                               ROOT_DIR="foo")
         self.assertEqual(join("foo", "storage", "log", "carbon-foo"),
                          settings.LOG_DIR)
 
@@ -181,12 +195,12 @@ class ReadConfigTest(MockerTestCase):
         Providing a different 'STORAGE_DIR' in defaults overrides the default
         of being relative to 'ROOT_DIR'.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance=None,
-                        pidfile=None, logdir=None),
-            ROOT_DIR="foo", STORAGE_DIR="bar")
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance=None,
+                                           pidfile=None, logdir=None),
+                               ROOT_DIR="foo", STORAGE_DIR="bar")
         self.assertEqual(join("bar", "log", "carbon-foo"),
                          settings.LOG_DIR)
 
@@ -196,12 +210,12 @@ class ReadConfigTest(MockerTestCase):
         to the 'STORAGE_DIR' setting. In the case of an instance, the instance
         name is appended to the directory.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance="x",
-                        pidfile=None, logdir=None),
-            ROOT_DIR="foo")
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance="x",
+                                           pidfile=None, logdir=None),
+                               ROOT_DIR="foo")
         self.assertEqual(join("foo", "storage", "log",
                               "carbon-foo", "carbon-foo-x"),
                          settings.LOG_DIR)
@@ -212,12 +226,12 @@ class ReadConfigTest(MockerTestCase):
         of being relative to 'ROOT_DIR'. In the case of an instance, the
         instance name is appended to the directory.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance="x",
-                        pidfile=None, logdir=None),
-            ROOT_DIR="foo", STORAGE_DIR="bar")
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance="x",
+                                           pidfile=None, logdir=None),
+                               ROOT_DIR="foo", STORAGE_DIR="bar")
         self.assertEqual(join("bar", "log", "carbon-foo", "carbon-foo-x"),
                          settings.LOG_DIR)
 
@@ -226,12 +240,12 @@ class ReadConfigTest(MockerTestCase):
         The 'pidfile' setting defaults to a program-specific filename relative
         to the 'STORAGE_DIR' setting.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance=None,
-                        pidfile=None, logdir=None),
-            ROOT_DIR="foo")
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance=None,
+                                           pidfile=None, logdir=None),
+                               ROOT_DIR="foo")
         self.assertEqual(join("foo", "storage", "carbon-foo.pid"),
                          settings.pidfile)
 
@@ -239,12 +253,12 @@ class ReadConfigTest(MockerTestCase):
         """
         The 'pidfile' option from command line overrides the default setting.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance=None,
-                        pidfile="foo.pid", logdir=None),
-            ROOT_DIR="foo")
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance=None,
+                                           pidfile="foo.pid", logdir=None),
+                               ROOT_DIR="foo")
         self.assertEqual("foo.pid", settings.pidfile)
 
     def test_pidfile_for_instance_in_options_has_precedence(self):
@@ -252,12 +266,12 @@ class ReadConfigTest(MockerTestCase):
         The 'pidfile' option from command line overrides the default setting
         for the instance, if one is specified.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance="x",
-                        pidfile="foo.pid", logdir=None),
-            ROOT_DIR="foo")
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance="x",
+                                           pidfile="foo.pid", logdir=None),
+                               ROOT_DIR="foo")
         self.assertEqual("foo.pid", settings.pidfile)
 
     def test_storage_dir_as_provided(self):
@@ -265,12 +279,12 @@ class ReadConfigTest(MockerTestCase):
         Providing a 'STORAGE_DIR' in defaults overrides the root-relative
         default.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance=None,
-                        pidfile=None, logdir=None),
-            ROOT_DIR="foo", STORAGE_DIR="bar")
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance=None,
+                                           pidfile=None, logdir=None),
+                               ROOT_DIR="foo", STORAGE_DIR="bar")
         self.assertEqual("bar", settings.STORAGE_DIR)
 
     def test_log_dir_as_provided(self):
@@ -278,12 +292,14 @@ class ReadConfigTest(MockerTestCase):
         Providing a 'LOG_DIR' in defaults overrides the storage-relative
         default.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance=None,
-                        pidfile=None, logdir=None),
-            ROOT_DIR="foo", STORAGE_DIR="bar", LOG_DIR='baz')
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance=None,
+                                           pidfile=None, logdir=None),
+                               ROOT_DIR="foo",
+                               STORAGE_DIR="bar",
+                               LOG_DIR='baz')
         self.assertEqual("baz", settings.LOG_DIR)
 
     def test_log_dir_from_options(self):
@@ -291,12 +307,12 @@ class ReadConfigTest(MockerTestCase):
         Providing a 'LOG_DIR' in the command line overrides the
         storage-relative default.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance=None,
-                        pidfile=None, logdir="baz"),
-            ROOT_DIR="foo")
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance=None,
+                                           pidfile=None, logdir="baz"),
+                               ROOT_DIR="foo")
         self.assertEqual("baz", settings.LOG_DIR)
 
     def test_log_dir_for_instance_from_options(self):
@@ -304,12 +320,12 @@ class ReadConfigTest(MockerTestCase):
         Providing a 'LOG_DIR' in the command line overrides the
         storage-relative default for the instance.
         """
-        config = self.makeFile(content="[foo]")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance="x",
-                        pidfile=None, logdir="baz"),
-            ROOT_DIR="foo")
+        self.raw_config.add_section("foo")
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance="x",
+                                           pidfile=None, logdir="baz"),
+                               ROOT_DIR="foo")
         self.assertEqual("baz", settings.LOG_DIR)
 
     def test_storage_dir_from_config(self):
@@ -317,12 +333,13 @@ class ReadConfigTest(MockerTestCase):
         Providing a 'STORAGE_DIR' in the configuration file overrides the
         root-relative default.
         """
-        config = self.makeFile(content="[foo]\nSTORAGE_DIR = bar")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance=None,
-                        pidfile=None, logdir=None),
-            ROOT_DIR="foo")
+        self.raw_config.add_section("foo")
+        self.raw_config.set('foo', 'STORAGE_DIR', 'bar')
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance=None,
+                                           pidfile=None, logdir=None),
+                               ROOT_DIR="foo")
         self.assertEqual("bar", settings.STORAGE_DIR)
 
     def test_log_dir_from_config(self):
@@ -330,12 +347,13 @@ class ReadConfigTest(MockerTestCase):
         Providing a 'LOG_DIR' in the configuration file overrides the
         storage-relative default.
         """
-        config = self.makeFile(content="[foo]\nLOG_DIR = baz")
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance=None,
-                        pidfile=None, logdir=None),
-            ROOT_DIR="foo")
+        self.raw_config.add_section("foo")
+        self.raw_config.set('foo', 'LOG_DIR', 'baz')
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance=None,
+                                           pidfile=None, logdir=None),
+                               ROOT_DIR="foo")
         self.assertEqual("baz", settings.LOG_DIR)
 
     def test_log_dir_from_instance_config(self):
@@ -344,12 +362,13 @@ class ReadConfigTest(MockerTestCase):
         file overrides the storage-relative default. The actual value will have
         the instance name appended to it and ends with a forward slash.
         """
-        config = self.makeFile(
-            content=("[foo]\nLOG_DIR = baz\n"
-                     "[foo:x]\nLOG_DIR = boo"))
-        settings = read_config(
-            "carbon-foo",
-            FakeOptions(config=config, instance="x",
-                        pidfile=None, logdir=None),
-            ROOT_DIR="foo")
+        self.raw_config.add_section("foo")
+        self.raw_config.set('foo', 'LOG_DIR', 'baz')
+        self.raw_config.add_section("foo:x")
+        self.raw_config.set('foo', 'LOG_DIR', 'boo')
+        config = self.write_config()
+        settings = read_config("carbon-foo",
+                               FakeOptions(config=config, instance="x",
+                                           pidfile=None, logdir=None),
+                               ROOT_DIR="foo")
         self.assertEqual("boo/carbon-foo-x", settings.LOG_DIR)
