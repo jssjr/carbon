@@ -1,6 +1,10 @@
 import os
-import unittest
 import errno
+
+import unittest
+if not hasattr(unittest.TestCase, 'assertIsNotNone'):
+    import unittest2 as unittest
+
 from ConfigParser import RawConfigParser
 from os import makedirs, getcwd
 from os.path import dirname, join
