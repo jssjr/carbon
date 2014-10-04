@@ -64,11 +64,13 @@ class RelayRulesRouterTest(unittest.TestCase):
 
 class ConsistentHashingRouterTest(unittest.TestCase):
 
-    def test_default(self):
-        self.assertEqual(1, 1)
-
-
-class AggregatedConsistentHashingRouterTest(unittest.TestCase):
-
-    def test_default(self):
-        self.assertEqual(1, 1)
+    def test_simple_hash_rung(self):
+        router = ConsistentHashingRouter()
+        router.addDestination(("127.0.0.1", 2004, "a"))
+        router.addDestination(("127.0.0.1", 2004, "b"))
+        destinations = set(router.getDestinations("a.b.c"))
+        self.assertEqual(set([('127.0.0.1', 2004, 'a')]),
+                         destinations)
+        destinations = set(router.getDestinations("c.b.a"))
+        self.assertEqual(set([('127.0.0.1', 2004, 'b')]),
+                         destinations)
