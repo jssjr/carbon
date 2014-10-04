@@ -82,6 +82,7 @@ try:
               'carbon-cache = carbon.console.cache:main',
               'carbon-client = carbon.console.client:main',
               'carbon-relay = carbon.console.relay:main',
+              'validate-storage-schemas = carbon.console.validate_storage_schemas:main',
           ],
       },
       **setup_kwargs
