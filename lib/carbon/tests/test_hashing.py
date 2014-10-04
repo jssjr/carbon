@@ -1,6 +1,11 @@
 import os
+
 import unittest
+if not hasattr(unittest.TestCase, 'assertIsNotNone'):
+    import unittest2 as unittest
+
 from carbon.hashing import ConsistentHashRing
+
 
 class HashIntegrityTest(unittest.TestCase):
 
