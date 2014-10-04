@@ -4,7 +4,7 @@ import pwd
 import __builtin__
 import sys
 
-from os.path import abspath, basename, dirname
+from os.path import abspath, basename, dirname, join
 try:
   from cStringIO import StringIO
 except ImportError:
@@ -33,8 +33,8 @@ def run_twistd_plugin(filename):
     from carbon.conf import get_parser
     from twisted.scripts.twistd import ServerOptions
 
-    bin_dir = dirname(abspath(filename))
-    root_dir = dirname(bin_dir)
+    console_dir = dirname(abspath(filename))
+    root_dir = dirname(join(console_dir, ".."))
     os.environ.setdefault('GRAPHITE_ROOT', root_dir)
 
     program = basename(filename).split('.')[0]
