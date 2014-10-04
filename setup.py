@@ -40,13 +40,12 @@ else:
 with open('setup.cfg', 'wb') as f:
     cf.write(f)
 
-if os.environ.get('USE_SETUPTOOLS'):
-  from setuptools import setup
-  setup_kwargs = dict(zip_safe=0)
-
-else:
+if os.environ.get('USE_DISTUTILS'):
   from distutils.core import setup
   setup_kwargs = dict()
+else:
+  from setuptools import setup
+  setup_kwargs = dict(zip_safe=0)
 
 
 storage_dirs = [ ('storage/whisper',[]), ('storage/lists',[]),
@@ -72,12 +71,19 @@ try:
       license='Apache Software License 2.0',
       description='Backend data caching and persistence daemon for Graphite',
       long_description='Backend data caching and persistence daemon for Graphite',
-      packages=['carbon', 'carbon.aggregator', 'twisted.plugins'],
+      packages=['carbon', 'carbon.console', 'carbon.aggregator', 'twisted.plugins'],
       package_dir={'' : 'lib'},
-      scripts=glob('bin/*'),
       package_data={ 'carbon' : ['*.xml'] },
       data_files=install_files,
       install_requires=['twisted', 'txamqp'],
+      entry_points={
+          'console_scripts': [
+              'carbon-aggregator = carbon.console.aggregator:main',
+              'carbon-cache = carbon.console.cache:main',
+              'carbon-client = carbon.console.client:main',
+              'carbon-relay = carbon.console.relay:main',
+          ],
+      },
       **setup_kwargs
     )
 finally:

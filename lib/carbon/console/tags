@@ -1,0 +1,43 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BIN_DIR	aggregator.py	/^BIN_DIR = os.path.dirname(os.path.abspath(__file__))$/;"	v
+BIN_DIR	client.py	/^BIN_DIR = dirname(abspath(__file__))$/;"	v
+BIN_DIR	relay.py	/^BIN_DIR = os.path.dirname(os.path.abspath(__file__))$/;"	v
+CONF_DIR	client.py	/^CONF_DIR = join(ROOT_DIR, 'conf')$/;"	v
+LIB_DIR	aggregator.py	/^LIB_DIR = os.path.join(ROOT_DIR, "lib")$/;"	v
+LIB_DIR	client.py	/^LIB_DIR = join(ROOT_DIR, 'lib')$/;"	v
+LIB_DIR	relay.py	/^LIB_DIR = os.path.join(ROOT_DIR, "lib")$/;"	v
+ROOT_DIR	aggregator.py	/^ROOT_DIR = os.path.dirname(BIN_DIR)$/;"	v
+ROOT_DIR	client.py	/^ROOT_DIR = dirname(BIN_DIR)$/;"	v
+ROOT_DIR	relay.py	/^ROOT_DIR = os.path.dirname(BIN_DIR)$/;"	v
+StdinMetricsReader	client.py	/^class StdinMetricsReader(LineReceiver):$/;"	c
+client_manager	client.py	/^client_manager = CarbonClientManager(router)$/;"	v
+connectionLost	client.py	/^  def connectionLost(self, reason):$/;"	m	class:StdinMetricsReader
+default_relayrules	client.py	/^default_relayrules = join(CONF_DIR, 'relay-rules.conf')$/;"	v
+delimiter	client.py	/^  delimiter = '\\n'$/;"	v	class:StdinMetricsReader
+destinations	client.py	/^destinations = []$/;"	v
+exitCode	client.py	/^exitCode = 0$/;"	v
+firstConnectAttempts	client.py	/^firstConnectAttempts = [client_manager.startClient(dest) for dest in destinations]$/;"	v
+firstConnectsAttempted	client.py	/^firstConnectsAttempted = defer.DeferredList(firstConnectAttempts)$/;"	v
+help	client.py	/^  help='Routing method: "consistent-hashing" (default) or "relay"')$/;"	v
+help	client.py	/^  help='relay-rules.conf file to use for relay routing')$/;"	v
+host	client.py	/^  host = parts[0]$/;"	v
+instance	client.py	/^    instance = None$/;"	v
+instance	client.py	/^    instance = parts[2]$/;"	v
+lineReceived	client.py	/^  def lineReceived(self, line):$/;"	m	class:StdinMetricsReader
+main	aggregator.py	/^def main():$/;"	f
+main	cache.py	/^def main():$/;"	f
+main	client.py	/^def main():$/;"	f
+main	relay.py	/^def main():$/;"	f
+main	validate-storage-schemas.py	/^def main():$/;"	f
+option_parser	client.py	/^option_parser = OptionParser(usage="%prog [options] <host:port:instance> <host:port:instance> ...")$/;"	v
+parts	client.py	/^  parts = arg.split(':', 2)$/;"	v
+port	client.py	/^  port = int(parts[1])$/;"	v
+router	client.py	/^    router = RelayRulesRouter(options.relayrules)$/;"	v
+router	client.py	/^  router = ConsistentHashingRouter(options.replication)$/;"	v
+shutdown	client.py	/^def shutdown(results):$/;"	f
+startShutdown	client.py	/^    def startShutdown(results):$/;"	f	function:StdinMetricsReader.connectionLost
