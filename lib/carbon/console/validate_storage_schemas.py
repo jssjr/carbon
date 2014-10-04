@@ -13,9 +13,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License."""
 
+import os
 import sys
 import whisper
-from os.path import dirname, exists, join, realpath
+from os.path import abspath, dirname, exists, join, realpath
 from ConfigParser import ConfigParser
 
 def main():
@@ -23,7 +24,10 @@ def main():
       SCHEMAS_FILE = sys.argv[1]
       print "Loading storage-schemas configuration from: '%s'" % SCHEMAS_FILE
     else:
-      SCHEMAS_FILE = realpath(join(dirname(__file__), '..', 'conf', 'storage-schemas.conf'))
+      if os.path.exists(join(os.getcwd(), 'conf', 'storage-schemas.conf')):
+        SCHEMAS_FILE = realpath(join(os.getcwd(), 'conf', 'storage-schemas.conf'))
+      else:
+        SCHEMAS_FILE = realpath(join('/', 'etc', 'graphite', 'storage-schemas.conf'))
       print "Loading storage-schemas configuration from default location at: '%s'" % SCHEMAS_FILE
 
     config_parser = ConfigParser()
